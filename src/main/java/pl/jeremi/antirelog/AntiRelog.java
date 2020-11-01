@@ -31,6 +31,8 @@ public class AntiRelog extends JavaPlugin implements Listener {
         config = getConfig();
 
         config.addDefault("enable-bar", true);
+        config.addDefault("enable-ticksound", true);
+        config.addDefault("enable-freesound", true);
         config.addDefault("combat-len", 15);
         config.addDefault("vanish-timeout", 5);
         config.addDefault("busy-message", "&cDo not log out before&7: &r{timeleft} secs.");
@@ -41,7 +43,7 @@ public class AntiRelog extends JavaPlugin implements Listener {
         config.addDefault("broadcast-message", "&b[AntiRelog] &6Player &2{displayname} &6has left while in combat!");
         config.addDefault("busy-chat", "&c[AntiRelog] &fYou are now in &6combat&f! It time out in {timeout} seconds.");
         config.addDefault("free-chat", "&a[AntiRelog] &6Combat&f timed out!");
-        config.addDefault("subjects", new String[]{"Player", "Zombie", "Husk", "Zombie_Villager"});
+        config.addDefault("entity-types", new String[]{"GUARDIAN", "CREEPER", "SKELETON", "ZOMBIE", "MAGMA_CUBE", "SILVERFISH", "BAT", "BLAZE", "GHAST", "GIANT", "SLIME", "SPIDER", "CAVE_SPIDER", "ENDERMAN", "ENDERMITE", "WITHER", "ENDER_DRAGON", "WITCH", "SHULKER", "VEX", "HUSK", "ELDER_GUARDIAN", "EVOKER", "STRAY", "ZOMBIE_VILLAGER", "WITHER_SKELETON", "VINDICATOR", "ILLUSIONER", "DROWNED", "PHANTOM", "RAVAGER", "PILLAGER", "BEE", "HOGLIN", "PIGLIN", "ZOGLIN", "ZOMBIFIED_PIGLIN"});
         config.options().copyDefaults(true);
         saveConfig();
 
@@ -50,6 +52,8 @@ public class AntiRelog extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
 
         CombatHandle.enableBar = AntiRelog.config.getBoolean("enable-bar");
+        CombatHandle.enableTickSound = AntiRelog.config.getBoolean("enable-ticksound");
+        CombatHandle.enableFreeSound = AntiRelog.config.getBoolean("enable-freesound");
     }
 
     @Override
@@ -83,26 +87,27 @@ public class AntiRelog extends JavaPlugin implements Listener {
     }
 
     @SuppressWarnings("unused")
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onCombat(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player && isSubject(event.getEntity().getType())) {
-            Player player = (Player) event.getDamager();
-            if (!bypassingPlayers.get(player))
-                handledPlayers.get(player).startCombat();
-        }
+        if(!event.isCancelled()) {
+            if (event.getDamager() instanceof Player && isEntityType(event.getEntity().getType())) {
+                Player player = (Player) event.getDamager();
+                if (!bypassingPlayers.get(player))
+                    handledPlayers.get(player).startCombat();
+            }
 
-        if (event.getEntity() instanceof Player) {
-            Player player = (Player) event.getEntity();
-            if (!bypassingPlayers.get(player))
-                handledPlayers.get(player).startCombat();
-        }
+            if (event.getEntity() instanceof Player) {
+                Player player = (Player) event.getEntity();
+                if (!bypassingPlayers.get(player))
+                    handledPlayers.get(player).startCombat();
+            }
 
-        if (event.getDamager() instanceof Projectile) {
-            if (((Projectile) event.getDamager()).getShooter() instanceof Player &&
-                    isSubject(event.getEntity().getType())) {
-                Player damager = (Player) (((Projectile) event.getDamager()).getShooter());
-                if (!bypassingPlayers.get(damager))
-                    handledPlayers.get(damager).startCombat();
+            if (event.getDamager() instanceof Projectile) {
+                if (((Projectile) event.getDamager()).getShooter() instanceof Player && isEntityType(event.getEntity().getType())) {
+                    Player damager = (Player) (((Projectile) event.getDamager()).getShooter());
+                    if (!bypassingPlayers.get(damager))
+                        handledPlayers.get(damager).startCombat();
+                }
             }
         }
     }
@@ -114,8 +119,8 @@ public class AntiRelog extends JavaPlugin implements Listener {
                 : "";
     }
 
-    private boolean isSubject(EntityType entity) {
-        for (String s : config.getStringList("subjects")) {
+    private boolean isEntityType(EntityType entity) {
+        for (String s : config.getStringList("entity-types")) {
             if (s.toUpperCase().equals(entity.name())) return true;
         }
         return false;

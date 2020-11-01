@@ -16,6 +16,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 @SuppressWarnings("FieldCanBeLocal")
 class CombatHandle {
     static boolean enableBar;
+    static boolean enableTickSound;
+    static boolean enableFreeSound;
     private int combatTimeLeft;
     private int combatTimeOut, vanishTimeOut;
     private JavaPlugin plugin;
@@ -87,7 +89,10 @@ class CombatHandle {
                     return;
                 }
 
-                player.playNote(player.getLocation(), Instrument.PIANO, Note.sharp(1, Note.Tone.C));
+                if(enableTickSound) {
+                    player.playNote(player.getLocation(), Instrument.PIANO, Note.sharp(1, Note.Tone.C));
+                }
+
                 if (enableBar) {
                     busyBar.setProgress((double) combatTimeLeft / combatTimeOut);
                     // Update time in message
@@ -116,7 +121,11 @@ class CombatHandle {
         }
         plugin.getServer().getScheduler().cancelTask(combatTickTask);
         combatTickTask = -1;
-        player.playNote(player.getLocation(), Instrument.PIANO, Note.natural(1, Note.Tone.G));
+
+        if(enableFreeSound) {
+            player.playNote(player.getLocation(), Instrument.PIANO, Note.natural(1, Note.Tone.G));
+        }
+
         if (!freeChat.isEmpty())
             player.sendMessage(freeChat);
 
