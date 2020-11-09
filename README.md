@@ -1,4 +1,4 @@
-# AntiRelog [![Travis CI](https://travis-ci.org/remi6397/AntiRelog.svg?branch=master)](https://travis-ci.org/remi6397/AntiRelog)
+# AntiRelog [![Travis CI](https://travis-ci.org/haugli92/AntiRelog.svg?branch=master)](https://travis-ci.org/haugli92/AntiRelog)
 
 An open-source combat logging prevention solution.
 
