@@ -45,6 +45,7 @@ public class AntiRelog extends JavaPlugin implements Listener {
         config.addDefault("broadcast-message", "&b[AntiRelog] &6Player &2{displayname} &6has left while in combat!");
         config.addDefault("busy-chat", "&c[AntiRelog] &fYou are now in &6combat&f! It time out in {timeout} seconds.");
         config.addDefault("free-chat", "&a[AntiRelog] &6Combat&f timed out!");
+        config.addDefault("ignored-projectile-types", new String[]{"SNOWBALL", "EGG", "FISHHOOK"});
         config.addDefault("entity-types", new String[]{"PLAYER", "GUARDIAN", "CREEPER", "SKELETON", "ZOMBIE", "MAGMA_CUBE", "SILVERFISH", "BAT", "BLAZE", "GHAST", "GIANT", "SLIME", "SPIDER", "CAVE_SPIDER", "ENDERMAN", "ENDERMITE", "WITHER", "ENDER_DRAGON", "WITCH", "SHULKER", "VEX", "HUSK", "ELDER_GUARDIAN", "EVOKER", "STRAY", "ZOMBIE_VILLAGER", "WITHER_SKELETON", "VINDICATOR", "ILLUSIONER", "DROWNED", "PHANTOM", "RAVAGER", "PILLAGER", "BEE", "HOGLIN", "PIGLIN", "ZOGLIN", "ZOMBIFIED_PIGLIN"});
         config.options().copyDefaults(true);
         saveConfig();
@@ -105,16 +106,18 @@ public class AntiRelog extends JavaPlugin implements Listener {
             }
 
             if (event.getDamager() instanceof Projectile) {
-                if (((Projectile) event.getDamager()).getShooter() instanceof Player && isEntityType(event.getEntity().getType())) {
-                    Player damager = (Player) (((Projectile) event.getDamager()).getShooter());
-                    if (!bypassingPlayers.get(damager))
-                        handledPlayers.get(damager).startCombat();
-                }
+                if(!isProjectileType(event.getDamager().getType())) {
+                    if (((Projectile) event.getDamager()).getShooter() instanceof Player && isEntityType(event.getEntity().getType())) {
+                        Player damager = (Player) (((Projectile) event.getDamager()).getShooter());
+                        if (!bypassingPlayers.get(damager))
+                            handledPlayers.get(damager).startCombat();
+                    }
 
-                if (event.getEntity() instanceof Player && isEntityType(((Entity) ((Projectile) event.getDamager()).getShooter()).getType())) {
-                    Player target = (Player) event.getEntity();
-                    if (!bypassingPlayers.get(target))
-                        handledPlayers.get(target).startCombat();
+                    if (event.getEntity() instanceof Player && isEntityType(((Entity) ((Projectile) event.getDamager()).getShooter()).getType())) {
+                        Player target = (Player) event.getEntity();
+                        if (!bypassingPlayers.get(target))
+                            handledPlayers.get(target).startCombat();
+                    }
                 }
             }
         }
@@ -129,6 +132,13 @@ public class AntiRelog extends JavaPlugin implements Listener {
 
     private boolean isEntityType(EntityType entity) {
         for (String s : config.getStringList("entity-types")) {
+            if (s.toUpperCase().equals(entity.name())) return true;
+        }
+        return false;
+    }
+
+    private boolean isProjectileType(EntityType entity) {
+        for (String s : config.getStringList("ignored-projectile-types")) {
             if (s.toUpperCase().equals(entity.name())) return true;
         }
         return false;
